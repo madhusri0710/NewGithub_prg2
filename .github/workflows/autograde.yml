@@ -1,0 +1,43 @@
+name: SQL Assignment Autograding
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  grade:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: assignmentdb
+        ports:
+          - 3306:3306
+
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Wait for MySQL
+        run: |
+          sleep 25
+
+      - name: Install MySQL Client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+
+      - name: Run Tests
+        run: |
+          chmod +x tests/verify.sh
+          ./tests/verify.sh
